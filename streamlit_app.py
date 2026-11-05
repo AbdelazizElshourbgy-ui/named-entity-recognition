@@ -2,157 +2,206 @@ import html
 import streamlit as st
 from transformers import pipeline
 
-# ---------------- Page Config & Setup ----------------
+# ---------------- Page Config ----------------
 st.set_page_config(
-    page_title="NER Predictor - CoNLL-2003",
+    page_title="Named Entity Recognition - CoNLL-2003",
     page_icon="🏷️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 MODEL_ID = "Abd3laziz1/ner-distilbert-conll2003"
 MAX_CHARS = 1500
 
-# ---------------- Custom CSS (Cyberpunk Dark Neon Theme) ----------------
-st.markdown("""
-<style>
-    /* Dark Theme Base */
-    .stApp {
-        background-color: #0d1117;
-        color: #e6edf3;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    /* Glowing Title */
-    .main-title {
-        background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 2.5rem;
-        font-weight: 800;
-        text-align: center;
-        margin-bottom: 0.3rem;
-    }
-    
-    .subtitle {
-        text-align: center;
-        color: #94a3b8;
-        font-size: 0.95rem;
-        margin-bottom: 1.8rem;
-    }
-
-    /* Tag Badges */
-    .ner-token {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 10px;
-        margin: 3px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(5px);
-    }
-
-    .tag-PER  { background: rgba(249, 115, 22, 0.2); color: #fb923c; border-color: rgba(249, 115, 22, 0.4); }
-    .tag-ORG  { background: rgba(59, 130, 246, 0.2);  color: #60a5fa; border-color: rgba(59, 130, 246, 0.4); }
-    .tag-LOC  { background: rgba(34, 197, 94, 0.2);   color: #4ade80; border-color: rgba(34, 197, 94, 0.4); }
-    .tag-MISC { background: rgba(168, 85, 247, 0.2);  color: #c084fc; border-color: rgba(168, 85, 247, 0.4); }
-
-    .tag-label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        padding: 2px 6px;
-        border-radius: 4px;
-        background: rgba(0, 0, 0, 0.4);
-    }
-
-    /* Input Styling */
-    .stTextArea textarea {
-        background-color: #161b22 !important;
-        color: #f0f6fc !important;
-        border: 1px solid #30363d !important;
-        border-radius: 12px !important;
-    }
-    
-    .stTextArea textarea:focus {
-        border-color: #a855f7 !important;
-        box-shadow: 0 0 10px rgba(168, 85, 247, 0.3) !important;
-    }
-
-    /* Button Polish */
-    div.stButton > button {
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
-@st.cache_resource(show_spinner="⚡ Loading Transformer Model...")
+# ---------------- Load HF Model ----------------
+@st.cache_resource(show_spinner="⚡ Loading DistilBERT Model...")
 def load_model():
     return pipeline("token-classification", model=MODEL_ID, aggregation_strategy="simple", device=-1)
 
 ner = load_model()
 
-# ---------------- Session State Initializer ----------------
+# ---------------- Exact HTML CSS & Glassmorphism Theme ----------------
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    /* Global Dark Setup */
+    .stApp {
+        background-color: #0b0f19;
+        color: #f1f5f9;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Gradient Title */
+    .hero-title {
+        background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #ec4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-align: center;
+        margin-top: -20px;
+        margin-bottom: 5px;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 1rem;
+        margin-bottom: 25px;
+        font-weight: 500;
+    }
+
+    /* Glass Cards */
+    .glass-card {
+        background: rgba(17, 24, 39, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* HTML HTML Token Highlights (Exact HTML match) */
+    .token-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        margin: 3px 2px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        transition: transform 0.2s ease;
+    }
+    
+    .token-badge:hover {
+        transform: translateY(-2px);
+    }
+
+    .tag-PER  { background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.35); }
+    .tag-ORG  { background: rgba(236, 72, 153, 0.18); color: #f472b6; border-color: rgba(236, 72, 153, 0.35); }
+    .tag-LOC  { background: rgba(34, 197, 94, 0.18);  color: #4ade80; border-color: rgba(34, 197, 94, 0.35); }
+    .tag-MISC { background: rgba(234, 179, 8, 0.18);  color: #facc15; border-color: rgba(234, 179, 8, 0.35); }
+
+    .tag-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 2px 5px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.4);
+        letter-spacing: 0.5px;
+    }
+
+    /* Input Controls Customization */
+    .stTextArea textarea {
+        background-color: rgba(15, 23, 42, 0.6) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        font-size: 1rem !important;
+    }
+    
+    .stTextArea textarea:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.25) !important;
+    }
+
+    /* Buttons */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        color: white !important;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+    }
+
+    div.stButton > button[kind="secondary"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------- Session State ----------------
 if "user_text" not in st.session_state:
-    st.session_state["user_text"] = "Elon Musk announced that Tesla will open a new facility in Berlin next year."
-if "has_submitted" not in st.session_state:
-    st.session_state["has_submitted"] = False
+    st.session_state["user_text"] = "German chancellor Angela Merkel met French president Emmanuel Macron in Brussels to discuss European Union affairs."
+if "submitted" not in st.session_state:
+    st.session_state["submitted"] = True
 
-def clear_all():
+def clear_text():
     st.session_state["user_text"] = ""
-    st.session_state["has_submitted"] = False
-
-# ---------------- Sidebar Guide ----------------
-with st.sidebar:
-    st.header("🏷️ Entities Legend")
-    st.markdown("""
-    - <span style="color:#fb923c; font-weight:bold;">PER</span> : Persons / People
-    - <span style="color:#60a5fa; font-weight:bold;">ORG</span> : Organizations & Companies
-    - <span style="color:#4ade80; font-weight:bold;">LOC</span> : Locations, Cities, Countries
-    - <span style="color:#c084fc; font-weight:bold;">MISC</span> : Miscellaneous (Nationalities, Events, etc.)
-    """, unsafe_allow_html=True)
-    st.divider()
-    st.info("💡 Write or paste your text in the box and click **Submit** to run entity detection.")
+    st.session_state["submitted"] = False
 
 # ---------------- UI Header ----------------
-st.markdown('<div class="main-title">Named Entity Recognition</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Fine-tuned DistilBERT • CoNLL-2003 Standard</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-title">Named Entity Recognition</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-subtitle">Extract Person, Organization, Location & Miscellaneous entities using DistilBERT CoNLL-2003</div>', unsafe_allow_html=True)
 
-# Selection Option (only write your own)
-st.selectbox("Input Mode", ["(write your own)"], disabled=True)
+# ---------------- Top Cards Layout (Legend & Input) ----------------
+col_left, col_right = st.columns([1, 2.2], gap="medium")
 
-st.subheader("✍️ Write your own")
-input_text = st.text_area(
-    label="Enter text:",
-    value=st.session_state["user_text"],
-    height=140,
-    placeholder="Type or paste your English text here...",
-    key="text_box"
-)
+with col_left:
+    st.markdown("""
+    <div class="glass-card">
+        <div class="card-title">🏷️ Entity Legend</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <div class="token-badge tag-PER"><span style="color:#f8fafc">Person</span> <span class="tag-label">PER</span></div>
+            <div class="token-badge tag-ORG"><span style="color:#f8fafc">Organization</span> <span class="tag-label">ORG</span></div>
+            <div class="token-badge tag-LOC"><span style="color:#f8fafc">Location</span> <span class="tag-label">LOC</span></div>
+            <div class="token-badge tag-MISC"><span style="color:#f8fafc">Miscellaneous</span> <span class="tag-label">MISC</span></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Control Buttons
-col1, col2, col3 = st.columns([1.5, 1.5, 7])
-with col1:
-    submit_btn = st.button("🚀 Submit", type="primary", use_container_width=True)
-with col2:
-    clear_btn = st.button("🗑️ Clear", on_click=clear_all, use_container_width=True)
+with col_right:
+    st.markdown('<div class="card-title">✍️ Write your own</div>', unsafe_allow_html=True)
+    
+    input_text = st.text_area(
+        label="Input Text",
+        value=st.session_state["user_text"],
+        height=130,
+        placeholder="Type or paste your text here...",
+        label_visibility="collapsed"
+    )
 
-if submit_btn:
-    st.session_state["user_text"] = input_text
-    st.session_state["has_submitted"] = True
+    btn_col1, btn_col2, _ = st.columns([1.5, 1.5, 5])
+    with btn_col1:
+        submit_btn = st.button("🚀 Submit", type="primary", use_container_width=True)
+    with btn_col2:
+        clear_btn = st.button("🗑️ Clear", on_click=clear_text, type="secondary", use_container_width=True)
 
-# ---------------- Output Processing & Visualization ----------------
-st.divider()
-st.subheader("📊 Detected Entities")
+    if submit_btn:
+        st.session_state["user_text"] = input_text
+        st.session_state["submitted"] = True
+
+# ---------------- Prediction & Output Section ----------------
+st.markdown("---")
+st.markdown('<div class="card-title">📊 Visual Extraction & Entities</div>', unsafe_allow_html=True)
 
 current_text = input_text.strip()[:MAX_CHARS]
 
-if st.session_state["has_submitted"] and current_text:
+if st.session_state["submitted"] and current_text:
+    # Inference call
     entities = sorted(ner(current_text), key=lambda e: e["start"])
 
     parts, rows, pos = [], [], 0
@@ -162,33 +211,38 @@ if st.session_state["has_submitted"] and current_text:
             continue
         label = e["entity_group"]
         
-        # Add preceding neutral text
+        # Plain text segment
         parts.append(html.escape(current_text[pos:start]))
         
-        # Styled entity token badge
+        # Styled HTML Tag Badge (identical to HTML design)
         parts.append(
-            f'<span class="ner-token tag-{label}">'
+            f'<span class="token-badge tag-{label}">'
             f'<span>{html.escape(current_text[start:end])}</span>'
             f'<span class="tag-label">{label}</span>'
             f'</span>'
         )
         
         rows.append({
-            "Entity": current_text[start:end],
-            "Type": label,
+            "Entity Text": current_text[start:end],
+            "Category": label,
             "Confidence Score": f"{float(e['score']):.2%}"
         })
         pos = end
 
     parts.append(html.escape(current_text[pos:]))
 
-    # Display interactive highlighted text
-    st.markdown('<div style="line-height: 2.2; font-size: 1.05rem; margin-bottom: 20px;">' + "".join(parts) + '</div>', unsafe_allow_html=True)
+    # Display Text Visualization Inside a Glass Container
+    st.markdown(
+        f'<div class="glass-card" style="line-height: 2.3; font-size: 1.05rem;">'
+        + "".join(parts) +
+        '</div>',
+        unsafe_allow_html=True
+    )
     
-    # Display table report
+    # Display Results Table
     if rows:
         st.dataframe(rows, use_container_width=True)
     else:
-        st.info("No entities found in the provided text.")
+        st.info("No entities detected in the text.")
 else:
-    st.info("Enter text above and click **Submit** to highlight entities.")
+    st.info("Enter your text above and click **Submit** to run prediction.")
