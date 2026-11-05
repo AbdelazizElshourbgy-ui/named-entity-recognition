@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B)
 
-A sequence labeling system that finds **people (PER), organizations (ORG), locations (LOC) and miscellaneous entities (MISC)** in English text. Four models are trained and compared on the same data: **LSTM, BiLSTM and BiLSTM + CRF** (built from scratch in PyTorch with GloVe and character embeddings) and a fine-tuned **DistilBERT**. The fine-tuned DistilBERT is deployed as an interactive **Gradio** app that highlights entities with colors.
+A sequence labeling system that finds **people (PER), organizations (ORG), locations (LOC) and miscellaneous entities (MISC)** in English text. Four models are trained and compared on the same data: **LSTM, BiLSTM and BiLSTM + CRF** (built from scratch in PyTorch with GloVe and character embeddings) and a fine-tuned **DistilBERT**. The fine-tuned DistilBERT is deployed as an interactive **Streamlit** web app (hosted on Streamlit Community Cloud) that highlights entities with colors. A **Gradio** version of the same app is included for local use.
 
 > ⚠️ This is a student project and is not a production information extraction system.
 
@@ -17,17 +17,20 @@ A sequence labeling system that finds **people (PER), organizations (ORG), locat
 ## 🌐 Links
 
 - 📓 **Training notebook on Kaggle:** [named-entity-recognition](https://www.kaggle.com/code/abdelazizelshourbgy/named-entity-recognition)
-- 🚀 **Live demo:** [https://named-entity-recognition0.streamlit.app/](https://named-entity-recognition0.streamlit.app/) 
+- 🚀 **Live demo:** [https://named-entity-recognition0.streamlit.app/](https://named-entity-recognition0.streamlit.app/) (Streamlit Community Cloud; it may need a few seconds to wake up if nobody used it recently)
+- 🤗 **Fine-tuned model on the Hugging Face Hub:** [Abd3laziz1/ner-distilbert-conll2003](https://huggingface.co/Abd3laziz1/ner-distilbert-conll2003) 
 
-## 📸 Demo Streamlit
+## 📸 Demo
 
-
-![Demo 2](assets/demo_2.png)
-
-## 📸 Demo Gradio
+### Live app (Streamlit)
 
 
-![Demo 1](assets/demo_1.png)
+![Streamlit demo](assets/demo_2.png)
+
+### Local app (Gradio)
+
+
+![Gradio demo](assets/demo_1.png)
 
 ---
 
@@ -123,8 +126,8 @@ In **130 test sentences only the CRF model gets every entity right**, compared w
 
 ```
 named-entity-recognition/
-├── app.py                          # Gradio
-├── streamlit_app.py                # Streamlit
+├── app.py                          # Gradio app (local, needs the model folder)
+├── streamlit_app.py                # Streamlit app (live demo, loads the model from the Hub)
 ├── named-entity-recognition.ipynb  # training, comparison and evaluation notebook
 ├── requirements.txt
 ├── assets/                         # screenshots and charts
@@ -132,7 +135,7 @@ named-entity-recognition/
 └── README.md
 ```
 
-The fine-tuned model (`ner_model/`, about 260 MB) is **not stored in this repository** because of GitHub's file size limit. It is in the files of the [Hugging Face Space](https://huggingface.co/spaces/Abd3laziz1/named-entity-recognition/tree/main/ner_model) <!-- update this link -->, and the Kaggle notebook produces it in `/kaggle/working/ner_model`.
+The fine-tuned model (`ner_model/`, about 260 MB) is **not stored in this repository** because of GitHub's file size limit. It is hosted on the [Hugging Face Hub](https://huggingface.co/Abd3laziz1/ner-distilbert-conll2003) (the Streamlit app loads it from there automatically), and the Kaggle notebook produces it in `/kaggle/working/ner_model`.
 
 ## 🚀 Run locally
 
@@ -147,13 +150,19 @@ venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 ```
 
-Download the `ner_model/` folder (see above) and put it next to `app.py`, then run:
+**Streamlit app** (loads the model from the Hugging Face Hub automatically, no download needed):
+
+```bash
+streamlit run streamlit_app.py
+```
+
+**Gradio app** (needs the model files locally): run `pip install gradio`, download the files of the [model repository](https://huggingface.co/Abd3laziz1/ner-distilbert-conll2003) into a folder named `ner_model` next to `app.py`, then run:
 
 ```bash
 python app.py
 ```
 
-Open the local address printed in the terminal (usually `http://127.0.0.1:7860`), type an English sentence and press **Submit**. The app runs on CPU and uses a GPU automatically if one is available. You can also point to another location with `MODEL_DIR=/path/to/ner_model python app.py`.
+Open the local address printed in the terminal (usually `http://localhost:8501` for Streamlit and `http://127.0.0.1:7860` for Gradio) and type an English sentence. Both apps run on CPU, and the Gradio app uses a GPU automatically if one is available. You can point the Gradio app to another model folder with `MODEL_DIR=/path/to/ner_model python app.py`.
 
 ## 🔁 Reproduce the training
 
@@ -168,6 +177,7 @@ Everything uses PyTorch only, so there is no framework conflict on the GPU.
 - CoNLL-2003 is Reuters news from 1996, in English only, with just 4 entity types. Results on other kinds of text (social media, other languages, other domains) will be different.
 - MISC and ORG entities are the weakest, and the confidence scores are not calibrated probabilities.
 - Metrics use seqeval's default (CoNLL-style) matching.
+- The live demo runs on a free CPU tier, so the first request after a period of inactivity can be slow.
 
 ## 🔮 Future work
 
@@ -178,7 +188,7 @@ Everything uses PyTorch only, so there is no framework conflict on the GPU.
 
 ## 🛠️ Tech stack
 
-Python · PyTorch · pytorch-crf · HuggingFace Transformers and Datasets · seqeval · gensim (GloVe) · Gradio · Streamlit . Pandas · Matplotlib · Kaggle
+Python · PyTorch · pytorch-crf · HuggingFace Transformers and Datasets · seqeval · gensim (GloVe) · Gradio · Streamlit · Pandas · Matplotlib · Kaggle
 
 ## 👤 Author
 
