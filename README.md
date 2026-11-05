@@ -20,8 +20,12 @@ A sequence labeling system that finds **people (PER), organizations (ORG), locat
 
 ## 📸 Demo Gradio
 
-<!-- Put your screenshots in assets/ and keep the names below -->
+
 ![Demo 1](assets/demo_1.png)
+
+## 📸 Demo Streamlit
+
+
 ![Demo 2](assets/demo_2.png)
 
 ---
