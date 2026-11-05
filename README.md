@@ -6,6 +6,7 @@
 ![Gradio](https://img.shields.io/badge/Gradio-App-F97316)
 ![F1](https://img.shields.io/badge/Test%20Entity%20F1-0.90-success)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B)
 
 A sequence labeling system that finds **people (PER), organizations (ORG), locations (LOC) and miscellaneous entities (MISC)** in English text. Four models are trained and compared on the same data: **LSTM, BiLSTM and BiLSTM + CRF** (built from scratch in PyTorch with GloVe and character embeddings) and a fine-tuned **DistilBERT**. The fine-tuned DistilBERT is deployed as an interactive **Gradio** app that highlights entities with colors.
 
