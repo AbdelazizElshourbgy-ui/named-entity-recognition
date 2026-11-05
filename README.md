@@ -122,7 +122,8 @@ In **130 test sentences only the CRF model gets every entity right**, compared w
 
 ```
 named-entity-recognition/
-├── app.py                          # strea
+├── app.py                          # Gradio
+├── streamlit_app.py                # Streamlit
 ├── named-entity-recognition.ipynb  # training, comparison and evaluation notebook
 ├── requirements.txt
 ├── assets/                         # screenshots and charts
@@ -176,7 +177,7 @@ Everything uses PyTorch only, so there is no framework conflict on the GPU.
 
 ## 🛠️ Tech stack
 
-Python · PyTorch · pytorch-crf · HuggingFace Transformers and Datasets · seqeval · gensim (GloVe) · Gradio · Pandas · Matplotlib · Kaggle
+Python · PyTorch · pytorch-crf · HuggingFace Transformers and Datasets · seqeval · gensim (GloVe) · Gradio · Streamlit . Pandas · Matplotlib · Kaggle
 
 ## 👤 Author
 
