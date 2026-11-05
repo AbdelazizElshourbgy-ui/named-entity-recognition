@@ -25,12 +25,12 @@ A sequence labeling system that finds **people (PER), organizations (ORG), locat
 ### Live app (Streamlit)
 
 
-![Streamlit demo](assets/demo_2.png)
+![Streamlit demo](assets/demo_1.png)
 
 ### Local app (Gradio)
 
 
-![Gradio demo](assets/demo_1.png)
+![Gradio demo](assets/demo_2.png)
 
 ---
 
