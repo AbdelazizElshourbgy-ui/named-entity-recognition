@@ -18,15 +18,15 @@ A sequence labeling system that finds **people (PER), organizations (ORG), locat
 - 📓 **Training notebook on Kaggle:** [named-entity-recognition](https://www.kaggle.com/code/abdelazizelshourbgy/named-entity-recognition)
 - 🚀 **Live demo:** [https://named-entity-recognition0.streamlit.app/](https://named-entity-recognition0.streamlit.app/) 
 
-## 📸 Demo Gradio
-
-
-![Demo 1](assets/demo_1.png)
-
 ## 📸 Demo Streamlit
 
 
 ![Demo 2](assets/demo_2.png)
+
+## 📸 Demo Gradio
+
+
+![Demo 1](assets/demo_1.png)
 
 ---
 
