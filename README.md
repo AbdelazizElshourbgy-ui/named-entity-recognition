@@ -16,9 +16,9 @@ A sequence labeling system that finds **people (PER), organizations (ORG), locat
 ## 🌐 Links
 
 - 📓 **Training notebook on Kaggle:** [named-entity-recognition](https://www.kaggle.com/code/abdelazizelshourbgy/named-entity-recognition)
-- 🚀 **Live demo:** [https://huggingface.co/spaces/Abd3laziz1/named-entity-recognition](https://huggingface.co/spaces/Abd3laziz1/named-entity-recognition) <!-- update this link after creating the Space -->
+- 🚀 **Live demo:** [https://named-entity-recognition0.streamlit.app/](https://named-entity-recognition0.streamlit.app/) 
 
-## 📸 Demo
+## 📸 Demo Gradio
 
 <!-- Put your screenshots in assets/ and keep the names below -->
 ![Demo 1](assets/demo_1.png)
