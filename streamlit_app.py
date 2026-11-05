@@ -1,229 +1,248 @@
-import streamlit as st
 import html
+import streamlit as st
 from transformers import pipeline
 
 # ---------------- Page Config ----------------
 st.set_page_config(
-    page_title="NER CyberLab - CoNLL-2003",
-    page_icon="⚡",
+    page_title="Named Entity Recognition - CoNLL-2003",
+    page_icon="🏷️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Hide Streamlit Default Elements & Margins
-st.markdown("""
-<style>
-    .block-container { padding: 0rem !important; max-width: 100% !important; }
-    header { visibility: hidden; }
-    footer { visibility: hidden; }
-    #MainMenu { visibility: hidden; }
-</style>
-""", unsafe_allow_html=True)
-
 MODEL_ID = "Abd3laziz1/ner-distilbert-conll2003"
+MAX_CHARS = 1500
 
-@st.cache_resource(show_spinner=False)
+# ---------------- Load HF Model ----------------
+@st.cache_resource(show_spinner="⚡ Loading DistilBERT Model...")
 def load_model():
     return pipeline("token-classification", model=MODEL_ID, aggregation_strategy="simple", device=-1)
 
 ner = load_model()
 
-# ---------------- Session State Initializer ----------------
-if "user_text" not in st.session_state:
-    st.session_state["user_text"] = "Elon Musk announced that SpaceX plans to build a new launch complex near Cairo next year."
-if "submitted" not in st.session_state:
-    st.session_state["submitted"] = True
-
-# Callback functions for buttons
-def handle_submit():
-    st.session_state["submitted"] = True
-
-def handle_clear():
-    st.session_state["user_text"] = ""
-    st.session_state["submitted"] = False
-
-def load_sample(sample_text):
-    st.session_state["user_text"] = sample_text
-    st.session_state["submitted"] = True
-
-# ---------------- Exact HTML/Tailwind CyberLab Design (No Top Nav) ----------------
+# ---------------- Exact HTML CSS & Glassmorphism Theme ----------------
 st.markdown("""
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <style>
-    .cyber-body {
-        background-color: #060911;
-        background-image: 
-            radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
-            radial-gradient(at 100% 0%, rgba(0, 243, 255, 0.15) 0px, transparent 50%),
-            radial-gradient(at 50% 100%, rgba(255, 0, 127, 0.1) 0px, transparent 50%);
-        background-attachment: fixed;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    /* Global Dark Setup */
+    .stApp {
+        background-color: #0b0f19;
         color: #f1f5f9;
-        min-height: 100vh;
-        padding: 2rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .glass-panel {
-        background: rgba(15, 23, 42, 0.75);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+    /* Gradient Title */
+    .hero-title {
+        background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #ec4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-align: center;
+        margin-top: -20px;
+        margin-bottom: 5px;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 1rem;
+        margin-bottom: 25px;
+        font-weight: 500;
+    }
+
+    /* Glass Cards */
+    .glass-card {
+        background: rgba(17, 24, 39, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1rem;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
 
-    .badge-PER { background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.6); color: #f472b6; }
-    .badge-ORG { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.6); color: #60a5fa; }
-    .badge-LOC { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.6); color: #34d399; }
-    .badge-MISC { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.6); color: #fbbf24; }
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* HTML HTML Token Highlights (Exact HTML match) */
+    .token-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        margin: 3px 2px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        transition: transform 0.2s ease;
+    }
+    
+    .token-badge:hover {
+        transform: translateY(-2px);
+    }
+
+    .tag-PER  { background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.35); }
+    .tag-ORG  { background: rgba(236, 72, 153, 0.18); color: #f472b6; border-color: rgba(236, 72, 153, 0.35); }
+    .tag-LOC  { background: rgba(34, 197, 94, 0.18);  color: #4ade80; border-color: rgba(34, 197, 94, 0.35); }
+    .tag-MISC { background: rgba(234, 179, 8, 0.18);  color: #facc15; border-color: rgba(234, 179, 8, 0.35); }
+
+    .tag-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 2px 5px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.4);
+        letter-spacing: 0.5px;
+    }
+
+    /* Input Controls Customization */
+    .stTextArea textarea {
+        background-color: rgba(15, 23, 42, 0.6) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        font-size: 1rem !important;
+    }
+    
+    .stTextArea textarea:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.25) !important;
+    }
+
+    /* Buttons */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        color: white !important;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+    }
+
+    div.stButton > button[kind="secondary"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Main Container Layout (Grid 7/5 Cols matching HTML)
-st.markdown('<div class="cyber-body">', unsafe_allow_html=True)
-col_left, col_right = st.columns([7, 5], gap="large")
+# ---------------- Session State ----------------
+if "user_text" not in st.session_state:
+    st.session_state["user_text"] = "German chancellor Angela Merkel met French president Emmanuel Macron in Brussels to discuss European Union affairs."
+if "submitted" not in st.session_state:
+    st.session_state["submitted"] = True
+
+def clear_text():
+    st.session_state["user_text"] = ""
+    st.session_state["submitted"] = False
+
+# ---------------- UI Header ----------------
+st.markdown('<div class="hero-title">Named Entity Recognition</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-subtitle">Extract Person, Organization, Location & Miscellaneous entities using DistilBERT CoNLL-2003</div>', unsafe_allow_html=True)
+
+# ---------------- Top Cards Layout (Legend & Input) ----------------
+col_left, col_right = st.columns([1, 2.2], gap="medium")
 
 with col_left:
     st.markdown("""
-    <div class="glass-panel p-6 shadow-2xl relative overflow-hidden mb-6">
-        <div class="flex items-center justify-between mb-3">
-            <label class="flex items-center gap-2 font-bold text-lg text-slate-200">
-                <i class="fa-solid fa-keyboard text-cyan-400"></i> Write your own
-            </label>
-        </div>
-        <p class="text-xs text-slate-400 mb-3">
-            Type or paste any text below to detect entities like Persons (<span class="text-pink-400">PER</span>), Organizations (<span class="text-blue-400">ORG</span>), Locations (<span class="text-emerald-400">LOC</span>), and Miscellaneous (<span class="text-amber-400">MISC</span>).
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Streamlit Input bound to session state
-    user_input = st.text_area(
-        label="Input Text",
-        value=st.session_state["user_text"],
-        height=140,
-        placeholder="e.g. Elon Musk announced that SpaceX plans to build a new launch complex near Cairo next year...",
-        label_visibility="collapsed"
-    )
-    st.session_state["user_text"] = user_input
-
-    # Quick Samples & Buttons inside Streamlit columns
-    st.markdown('<div class="flex items-center gap-2 mt-3 mb-4 text-xs text-slate-400"><i class="fa-solid fa-wand-magic-sparkles text-fuchsia-400"></i> <b>Quick Samples:</b></div>', unsafe_allow_html=True)
-    sc1, sc2, _ = st.columns([2, 2, 3])
-    with sc1:
-        if st.button("Sample 1 (Tech & Business)", use_container_width=True):
-            load_sample("Apple CEO Tim Cook visited Tokyo last Thursday to announce a new technology research hub in Japan with Sony.")
-            st.rerun()
-    with sc2:
-        if st.button("Sample 2 (Global News)", use_container_width=True):
-            load_sample("The European Union rejects German proposals to increase trade tariffs on imported goods from China, said official Maria Santos.")
-            st.rerun()
-
-    # Action Buttons Row
-    bc1, bc2 = st.columns([1, 1])
-    with bc1:
-        st.button("🗑️ Clear", on_click=handle_clear, use_container_width=True)
-    with bc2:
-        st.button("⚡ Submit & Predict", on_click=handle_submit, type="primary", use_container_width=True)
-
-    # Taxonomy / Legend Card
-    st.markdown("""
-    <div class="glass-panel p-5 shadow-xl mt-6">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
-            <i class="fa-solid fa-tags text-cyan-400"></i> Entity Taxonomy (CoNLL-2003)
-        </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div class="p-2.5 rounded-xl bg-pink-950/20 border border-pink-500/30 flex flex-col gap-1">
-                <span class="font-bold text-pink-400 flex items-center justify-between">PER <i class="fa-solid fa-user text-[10px]"></i></span>
-                <span class="text-slate-400 text-[11px]">Persons / People</span>
-            </div>
-            <div class="p-2.5 rounded-xl bg-blue-950/20 border border-blue-500/30 flex flex-col gap-1">
-                <span class="font-bold text-blue-400 flex items-center justify-between">ORG <i class="fa-solid fa-building text-[10px]"></i></span>
-                <span class="text-slate-400 text-[11px]">Organizations</span>
-            </div>
-            <div class="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex flex-col gap-1">
-                <span class="font-bold text-emerald-400 flex items-center justify-between">LOC <i class="fa-solid fa-location-dot text-[10px]"></i></span>
-                <span class="text-slate-400 text-[11px]">Locations / Cities</span>
-            </div>
-            <div class="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 flex flex-col gap-1">
-                <span class="font-bold text-amber-400 flex items-center justify-between">MISC <i class="fa-solid fa-globe text-[10px]"></i></span>
-                <span class="text-slate-400 text-[11px]">Miscellaneous</span>
-            </div>
+    <div class="glass-card">
+        <div class="card-title">🏷️ Entity Legend</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <div class="token-badge tag-PER"><span style="color:#f8fafc">Person</span> <span class="tag-label">PER</span></div>
+            <div class="token-badge tag-ORG"><span style="color:#f8fafc">Organization</span> <span class="tag-label">ORG</span></div>
+            <div class="token-badge tag-LOC"><span style="color:#f8fafc">Location</span> <span class="tag-label">LOC</span></div>
+            <div class="token-badge tag-MISC"><span style="color:#f8fafc">Miscellaneous</span> <span class="tag-label">MISC</span></div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 with col_right:
-    st.markdown('<div class="glass-panel p-6 shadow-2xl flex flex-col min-h-[480px]">', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">✍️ Write your own</div>', unsafe_allow_html=True)
     
-    current_text = user_input.strip()[:1500]
-    is_active = st.session_state["submitted"] and current_text
+    input_text = st.text_area(
+        label="Input Text",
+        value=st.session_state["user_text"],
+        height=130,
+        placeholder="Type or paste your text here...",
+        label_visibility="collapsed"
+    )
 
-    status_badge = '<span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">Tagged Successfully</span>' if is_active else '<span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Awaiting input</span>'
+    btn_col1, btn_col2, _ = st.columns([1.5, 1.5, 5])
+    with btn_col1:
+        submit_btn = st.button("🚀 Submit", type="primary", use_container_width=True)
+    with btn_col2:
+        clear_btn = st.button("🗑️ Clear", on_click=clear_text, type="secondary", use_container_width=True)
 
-    st.markdown(f"""
-    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-        <h2 class="font-bold text-lg text-slate-200 flex items-center gap-2">
-            <i class="fa-solid fa-square-poll-vertical text-fuchsia-400"></i> Prediction Output
-        </h2>
-        {status_badge}
-    </div>
-    """, unsafe_allow_html=True)
+    if submit_btn:
+        st.session_state["user_text"] = input_text
+        st.session_state["submitted"] = True
 
-    if is_active:
-        entities = sorted(ner(current_text), key=lambda e: e["start"])
-        parts, rows, pos = [], [], 0
+# ---------------- Prediction & Output Section ----------------
+st.markdown("---")
+st.markdown('<div class="card-title">📊 Visual Extraction & Entities</div>', unsafe_allow_html=True)
 
-        for e in entities:
-            start, end = max(e["start"], pos), e["end"]
-            if start >= end:
-                continue
-            label = e["entity_group"]
-            parts.append(html.escape(current_text[pos:start]))
-            parts.append(
-                f'<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-medium badge-{label} m-1">'
-                f'<span>{html.escape(current_text[start:end])}</span>'
-                f'<span class="text-[9px] opacity-70 font-bold uppercase px-1 rounded bg-black/20">{label}</span>'
-                f'</span>'
-            )
-            rows.append({"Entity": current_text[start:end], "Type": label, "Confidence": f"{float(e['score']):.2%}"})
-            pos = end
-        parts.append(html.escape(current_text[pos:]))
+current_text = input_text.strip()[:MAX_CHARS]
 
-        st.markdown('<h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Token Stream View</h4>', unsafe_allow_html=True)
-        st.markdown(
-            f'<div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-wrap gap-1 leading-loose min-h-[140px] max-h-[220px] overflow-y-auto mb-4">'
-            + "".join(parts) +
-            '</div>',
-            unsafe_allow_html=True
+if st.session_state["submitted"] and current_text:
+    # Inference call
+    entities = sorted(ner(current_text), key=lambda e: e["start"])
+
+    parts, rows, pos = [], [], 0
+    for e in entities:
+        start, end = max(e["start"], pos), e["end"]
+        if start >= end:
+            continue
+        label = e["entity_group"]
+        
+        # Plain text segment
+        parts.append(html.escape(current_text[pos:start]))
+        
+        # Styled HTML Tag Badge (identical to HTML design)
+        parts.append(
+            f'<span class="token-badge tag-{label}">'
+            f'<span>{html.escape(current_text[start:end])}</span>'
+            f'<span class="tag-label">{label}</span>'
+            f'</span>'
         )
+        
+        rows.append({
+            "Entity Text": current_text[start:end],
+            "Category": label,
+            "Confidence Score": f"{float(e['score']):.2%}"
+        })
+        pos = end
 
-        st.markdown(f"""
-        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex justify-between items-center">
-            <span>Detected Entities Summary</span>
-            <span class="text-cyan-400 font-mono text-xs">{len(rows)} items</span>
-        </h4>
-        """, unsafe_allow_html=True)
+    parts.append(html.escape(current_text[pos:]))
 
-        if rows:
-            st.dataframe(rows, use_container_width=True, height=180)
-        else:
-            st.markdown('<p class="text-xs text-slate-500 italic p-2">No named entities recognized in this input.</p>', unsafe_allow_html=True)
+    # Display Text Visualization Inside a Glass Container
+    st.markdown(
+        f'<div class="glass-card" style="line-height: 2.3; font-size: 1.05rem;">'
+        + "".join(parts) +
+        '</div>',
+        unsafe_allow_html=True
+    )
+    
+    # Display Results Table
+    if rows:
+        st.dataframe(rows, use_container_width=True)
     else:
-        st.markdown("""
-        <div class="my-auto flex flex-col items-center justify-center text-center p-12 text-slate-500">
-            <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-4 text-slate-600 text-2xl">
-                <i class="fa-solid fa-font"></i>
-            </div>
-            <p class="font-semibold text-slate-300">No predictions yet</p>
-            <p class="text-xs mt-1 max-w-xs text-slate-400">Enter text in the left panel and click <b>Submit & Predict</b> to see tokens tagged.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+        st.info("No entities detected in the text.")
+else:
+    st.info("Enter your text above and click **Submit** to run prediction.")
